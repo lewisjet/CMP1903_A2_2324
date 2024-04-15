@@ -15,29 +15,11 @@ namespace CMP1903_A2_2324
          */
         public static Random RandomInstance { get; } = new Random();
 
-        private static Game PromptUserForGame(bool playAgainstComputer)
-        {
-            Console.WriteLine("Please press the number corresponding to the game you would like to play.");
-            Console.WriteLine("1) Sevens Out");
-            Console.WriteLine("2) Three or More");
-
-            while (true)
-            {
-                var keypress = Console.ReadKey();
-                Console.WriteLine();
-                
-                switch (keypress.KeyChar)
+        private static Game[] games = new Game[]
                 {
-                    case '1':
-                        return new SevensOut(playAgainstComputer);
-                    case '2':
-                        return new ThreeOrMore(playAgainstComputer);
-                    default:
-                        Console.WriteLine("Your input was invalid. Please press '1' or '2'.");
-                        break;
-                }
-            }
-        }
+                    new SevensOut(false),
+                    new ThreeOrMore(false)
+                };
 
         private static bool PromptUserForPartnerPlay()
         {
@@ -64,8 +46,25 @@ namespace CMP1903_A2_2324
         
         private static void Main()
         {
-            var game = PromptUserForGame(!PromptUserForPartnerPlay());
-            game.PlayGame();
+            do
+            {
+                var game = Game.PromptUserForGame(games);
+            
+                game.PlayingAgainstComputer = !PromptUserForPartnerPlay();
+                game.PlayGame();
+                Console.WriteLine("Would you like to play another game? If so, press 'y'. To exit, press any other key.");
+            } while (Console.ReadKey().KeyChar.ToString().ToLower() == "y");
+            
+            Console.WriteLine();
+
+            foreach(var game in games) 
+            {
+                Console.WriteLine($"======== {game.Name} Statistics ========");
+                game.PrintStatistics();
+                Console.WriteLine();
+            }
+
+            Console.ReadKey();
         }
     }
 }

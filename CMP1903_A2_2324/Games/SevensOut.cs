@@ -1,15 +1,20 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using CMP1903_A2_2324.Interfaces;
 
 namespace CMP1903_A2_2324.Games
 {
-    internal class SevensOut : Game, IPointsTracking
+    internal class SevensOut : Game, IStatisticsTrackable
     {
-        public int[] Points { get; } = new int[2];
+        public Dictionary<int, int> Points { get; } = new Dictionary<int, int>();
+
+        public override string Name => "Sevens Out";
 
         public SevensOut(bool playAgainstComputer) : base(2, playAgainstComputer)
         {
+            Points.Add(1, 0);
+            Points.Add(2, 0);
         }
 
         private int RollAndSumDice()
@@ -38,8 +43,8 @@ namespace CMP1903_A2_2324.Games
         private void OutputTurnResults(int playerNumber, int total, bool isComputer)
         {
             Console.WriteLine();
-            Console.WriteLine($"======== Player {playerNumber + 1}'s Turn {(isComputer ? "[Computer]" : "[Human]")} ========");
-            for (var i = 0; i < Dice.Length; i++)
+            Console.WriteLine($"======== Player {playerNumber}'s Turn {(isComputer ? "[Computer]" : "[Human]")} ========");
+            for (var i = 0; i < Dice.Count; i++)
             {
                 Console.WriteLine($"Die {i + 1}: {Dice[i].CurrentValue}");
             }
@@ -70,6 +75,14 @@ namespace CMP1903_A2_2324.Games
             Console.WriteLine("Press any key to continue...");
             Console.ReadKey();
             return complete;
+        }
+
+        public override void PlayGame()
+        {
+            for(int i = 0; i < Points.Count; i++) Points[i] = 0;
+            
+            base.PlayGame();
+            GameStatistics.AddNewGame(this);
         }
     }
 }

@@ -6,26 +6,53 @@ using CMP1903_A2_2324.Interfaces;
 
 namespace CMP1903_A2_2324.Games
 {
-    internal class ThreeOrMore : Game, IPointsTracking
+    internal class ThreeOrMore : Game, IStatisticsTrackable
     {
-        public int[] Points { get; } = new int[2];
-        
+        public Dictionary<int, int> Points { get; } = new Dictionary<int, int>();
+
+        public override string Name => "Three or More";
+
         public ThreeOrMore(bool playAgainstComputer) : base(5, playAgainstComputer)
         {
+            Points.Add(1, 0);
+            Points.Add(2, 0);
+        }
+
+        private string FormatRolls() => string.Join(", ", Dice.Select(i => i.CurrentValue.ToString()));
+
+        private bool CalculateComputerTwoOfAKind(IEnumerable<int> diceValues)
+        {
+            Console.WriteLine($"The computer rolled {FormatRolls()}, which contains a pair of two.");
+
+            var shouldRerollAll = diceValues.Max() < 3;
+
+            Thread.Sleep(1000);
+
+            if (shouldRerollAll)
+                Console.WriteLine("The computer decided to reroll all dice.");
+            else
+                Console.WriteLine("The computer decided to reroll the remaining dice.");
+
+            Console.WriteLine();
+
+            return shouldRerollAll;
         }
 
         private bool GetTwoOfKindInput()
         {
-            Console.WriteLine($"You rolled {string.Join(", ", Dice.Select(i => i.CurrentValue.ToString()))}, which contains a pair of two.");
+            Console.WriteLine($"You rolled {FormatRolls()}, which contains a pair of two.");
             Console.WriteLine($"Would you like to roll all your dice again, or only the three remaining dice?");
             Console.Write($"Type \"all\" to roll all dice again, or type anything else to only roll the remaining: ");
             var input = Console.ReadLine();
+            Console.WriteLine();
             return input != null && input.ToLower() == "all";
         }
 
         private void HandleTwoOfKind(IEnumerable<int> diceValues, int valueTwoOf, int playerNumber, bool isComputer)
         {
-            var shouldGlobalRoll = (isComputer && diceValues.Max() < 3) || (!isComputer && GetTwoOfKindInput());
+
+            var shouldGlobalRoll = (isComputer && CalculateComputerTwoOfAKind(diceValues)) 
+                || (!isComputer && GetTwoOfKindInput());
 
             if (shouldGlobalRoll)
             {
@@ -35,7 +62,7 @@ namespace CMP1903_A2_2324.Games
                 if (die.CurrentValue != valueTwoOf)
                     die.Roll();
             
-            AddPointsToAward(playerNumber, true);
+            AddPointsToAward(playerNumber, isComputer);
         }
 
         private void AddPointsToAward(int playerNumber, bool isComputer)
@@ -87,10 +114,10 @@ namespace CMP1903_A2_2324.Games
         
         protected override bool CompleteComputerTurn(int playerNumber)
         {
-            Console.WriteLine($"======== Player {playerNumber + 1}'s Turn [Computer] ========");
+            Console.WriteLine($"======== Player {playerNumber}'s Turn [Computer] ========");
             RollDice(playerNumber, true);
 
-            Console.WriteLine($"The computer rolled: {string.Join(", ", Dice.Select(i => i.CurrentValue.ToString()))}, bringing them to {Points[playerNumber]} points.");
+            Console.WriteLine($"The computer rolled: {FormatRolls()}, bringing them to {Points[playerNumber]} points.");
             Console.WriteLine();
             Thread.Sleep(1000);
             
@@ -99,10 +126,10 @@ namespace CMP1903_A2_2324.Games
         
         protected override bool CompletePlayerTurn(int playerNumber)
         {
-            Console.WriteLine($"======== Player {playerNumber + 1}'s Turn [Player] ========");
+            Console.WriteLine($"======== Player {playerNumber}'s Turn [Player] ========");
             RollDice(playerNumber, false);
             
-            Console.WriteLine($"Player {playerNumber + 1} rolled: {string.Join(", ", Dice.Select(i => i.CurrentValue.ToString()))}, bringing them up to {Points[playerNumber]} points.");
+            Console.WriteLine($"Player {playerNumber} rolled: {FormatRolls()}, bringing them up to {Points[playerNumber]} points.");
             Console.WriteLine("Press any key to continue.");
             Console.WriteLine();
             Console.ReadKey();
@@ -110,5 +137,11 @@ namespace CMP1903_A2_2324.Games
             return Points[playerNumber] >= 20;
         }
 
+        public override void PlayGame()
+        {
+            for (int i = 0; i < Points.Count; i++) Points[i] = 0;
+            base.PlayGame();
+            GameStatistics.AddNewGame(this);
+        }
     }
 }

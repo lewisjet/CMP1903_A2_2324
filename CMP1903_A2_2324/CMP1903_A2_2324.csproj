@@ -47,9 +47,10 @@
     <Compile Include="Games\Game.cs" />
     <Compile Include="Games\SevensOut.cs" />
     <Compile Include="Games\ThreeOrMore.cs" />
-    <Compile Include="Interfaces\IPointsTracking.cs" />
+    <Compile Include="Interfaces\IStatisticsTrackable.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Statistics.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

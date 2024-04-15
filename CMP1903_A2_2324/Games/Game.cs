@@ -7,15 +7,44 @@ namespace CMP1903_A2_2324.Games
 {
     internal abstract class Game
     {
-        protected const int FirstPlayerNumber = 0;
-        protected const int SecondaryPlayerNumber = 1;
+        protected const int FirstPlayerNumber = 1;
+        protected const int SecondaryPlayerNumber = 2;
         
-        protected Die[] Dice { get; private set; }
+        protected List<Die> Dice { get; private set; }
+        protected Statistics GameStatistics { get; } = new Statistics();
+        public abstract string Name { get; }
 
-        public bool PlayingAgainstComputer { get; private set; }
+        public bool PlayingAgainstComputer { get; set; }
 
         protected abstract bool CompleteComputerTurn(int playerNumber);
         protected abstract bool CompletePlayerTurn(int playerNumber);
+
+        public static Game PromptUserForGame(IEnumerable<Game> games)
+        {
+            var gamesArr = games.ToArray();
+
+            Console.WriteLine("Please press the number corresponding to the game you would like to play.");
+            for(int i = 0; i < gamesArr.Length; i++)
+            {
+                Console.WriteLine($"{i + 1}) {gamesArr[i].Name}");
+            }
+
+            while (true)
+            {
+                var keypress = Console.ReadKey();
+                Console.WriteLine();
+
+                for (int i = 0; i < gamesArr.Length; i++) 
+                {
+                    if(keypress.KeyChar.ToString() == (i + 1).ToString())
+                        return gamesArr[i];
+                }
+                
+                Console.WriteLine("Your input was invalid. Please press a valid number key.");
+            }
+        }
+
+        public virtual void PrintStatistics() => GameStatistics.PrintStatistics();
 
         public virtual void PlayGame()
         {
@@ -33,7 +62,9 @@ namespace CMP1903_A2_2324.Games
         protected Game(int numberOfDice, bool playAgainstComputer)
         {
             PlayingAgainstComputer = playAgainstComputer;
-            Dice = new Die[numberOfDice].Select(_ => new Die()).ToArray();
+
+            Dice = new List<Die>();
+            for(int i = 0; i < numberOfDice; i++) Dice.Add(new Die());
         }
     }
 }
