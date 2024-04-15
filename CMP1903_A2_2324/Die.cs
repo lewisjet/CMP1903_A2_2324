@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CMP1903_A1_2324
+namespace CMP1903_A2_2324
 {
     internal class Die
     {
         // Declare a constant integer, defining how many sides the die has.
-        private const int SidesOnDie = 6;
+        public const int SidesOnDie = 6;
         
         /*
          * The Die class should contain one property to hold the current die value,
