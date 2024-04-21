@@ -16,8 +16,14 @@ namespace CMP1903_A2_2324.Games
 
         public bool PlayingAgainstComputer { get; set; }
 
+        public delegate void TurnCompletedHandler(int player, int gainedScore, int newScore, int[] diceRolls);
+        public event TurnCompletedHandler OnTurnCompleted;
+
         protected abstract bool CompleteComputerTurn(int playerNumber);
         protected abstract bool CompletePlayerTurn(int playerNumber);
+
+        protected void InvokeTurnCompleted(int player, int gainedScore, int newScore) => 
+            OnTurnCompleted?.Invoke(player, gainedScore, newScore, Dice.Select(i => i.CurrentValue).ToArray());
 
         public static Game PromptUserForGame(IEnumerable<Game> games)
         {

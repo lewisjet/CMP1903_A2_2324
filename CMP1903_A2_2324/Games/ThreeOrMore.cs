@@ -12,7 +12,7 @@ namespace CMP1903_A2_2324.Games
 
         public override string Name => "Three or More";
 
-        public ThreeOrMore(bool playAgainstComputer) : base(5, playAgainstComputer)
+        public ThreeOrMore(bool playAgainstComputer = true) : base(5, playAgainstComputer)
         {
             Points.Add(1, 0);
             Points.Add(2, 0);
@@ -48,7 +48,7 @@ namespace CMP1903_A2_2324.Games
             return input != null && input.ToLower() == "all";
         }
 
-        private void HandleTwoOfKind(IEnumerable<int> diceValues, int valueTwoOf, int playerNumber, bool isComputer)
+        private int HandleTwoOfKind(IEnumerable<int> diceValues, int valueTwoOf, int playerNumber, bool isComputer)
         {
 
             var shouldGlobalRoll = (isComputer && CalculateComputerTwoOfAKind(diceValues)) 
@@ -62,10 +62,10 @@ namespace CMP1903_A2_2324.Games
                 if (die.CurrentValue != valueTwoOf)
                     die.Roll();
             
-            AddPointsToAward(playerNumber, isComputer);
+            return AddPointsToAward(playerNumber, isComputer);
         }
 
-        private void AddPointsToAward(int playerNumber, bool isComputer)
+        private int AddPointsToAward(int playerNumber, bool isComputer)
         {
             var dieValues = new int[Die.SidesOnDie];
             foreach (var die in Dice)
@@ -78,12 +78,12 @@ namespace CMP1903_A2_2324.Games
             {
                 var value = dieValues[index];
                 if (value != 2) continue;
-                
-                HandleTwoOfKind(dieValues, index + 1, playerNumber, isComputer);
-                return;
+
+                return HandleTwoOfKind(dieValues, index + 1, playerNumber, isComputer);
 
             }
 
+            var totalPointsGiven = 0;
             foreach (var value in dieValues)
             {
                 var pointsToAward = 0;
@@ -102,24 +102,28 @@ namespace CMP1903_A2_2324.Games
                 }
 
                 Points[playerNumber] += pointsToAward;
+                totalPointsGiven += pointsToAward;
             }
+            return totalPointsGiven;
         }
         
-        private void RollDice(int playerNumber, bool isComputer)
+        private int RollDiceAndAddPoints(int playerNumber, bool isComputer)
         {
             foreach (var die in Dice) die.Roll();
 
-            AddPointsToAward(playerNumber, isComputer);
+            return AddPointsToAward(playerNumber, isComputer);
         }
         
         protected override bool CompleteComputerTurn(int playerNumber)
         {
             Console.WriteLine($"======== Player {playerNumber}'s Turn [Computer] ========");
-            RollDice(playerNumber, true);
+            var newPoints = RollDiceAndAddPoints(playerNumber, true);
 
             Console.WriteLine($"The computer rolled: {FormatRolls()}, bringing them to {Points[playerNumber]} points.");
             Console.WriteLine();
             Thread.Sleep(1000);
+
+            InvokeTurnCompleted(playerNumber, newPoints, Points[playerNumber]);
             
             return Points[playerNumber] >= 20;
         }
@@ -127,13 +131,15 @@ namespace CMP1903_A2_2324.Games
         protected override bool CompletePlayerTurn(int playerNumber)
         {
             Console.WriteLine($"======== Player {playerNumber}'s Turn [Player] ========");
-            RollDice(playerNumber, false);
+            var newPoints =  RollDiceAndAddPoints(playerNumber, false);
             
             Console.WriteLine($"Player {playerNumber} rolled: {FormatRolls()}, bringing them up to {Points[playerNumber]} points.");
             Console.WriteLine("Press any key to continue.");
             Console.WriteLine();
             Console.ReadKey();
-            
+
+            InvokeTurnCompleted(playerNumber, newPoints, Points[playerNumber]);
+
             return Points[playerNumber] >= 20;
         }
 

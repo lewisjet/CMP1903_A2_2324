@@ -11,7 +11,7 @@ namespace CMP1903_A2_2324.Games
 
         public override string Name => "Sevens Out";
 
-        public SevensOut(bool playAgainstComputer) : base(2, playAgainstComputer)
+        public SevensOut(bool playAgainstComputer = true) : base(2, playAgainstComputer)
         {
             Points.Add(1, 0);
             Points.Add(2, 0);
@@ -59,6 +59,7 @@ namespace CMP1903_A2_2324.Games
             OutputTurnResults(playerNumber, total, isComputer);
             if (total == 7) return true;
             Points[playerNumber] += total;
+            InvokeTurnCompleted(playerNumber, total, Points[playerNumber]);
             return false;
         }
 
