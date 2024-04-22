@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace CMP1903_A2_2324
 {
+    /// <summary>
+    /// The die class, taken from the first assessment.
+    /// </summary>
     internal class Die
     {
         // Declare a constant integer, defining how many sides the die has.
