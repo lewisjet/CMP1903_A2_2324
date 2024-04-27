@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,15 +12,27 @@ namespace CMP1903_A2_2324
     /// <summary>
     /// Handles testing for inheritors of the Game class.
     /// </summary>
-    internal class Testing
+    internal class Testing : IDisposable
     {
+        private const string DefaultLogFileName = "testing_results.log";
+
+        /// <summary>
+        /// The path where the log file is saved to.
+        /// </summary>
+        public string LogPath => Path.Combine(Environment.CurrentDirectory, DefaultLogFileName);
+        
         /// <summary>
         /// Holds the game instance, instantiated for testing.
         /// </summary>
         private Game GameInstance { get; }
+        
+        /// <summary>
+        /// So the results of the test can be written to a file, a file stream is stored in the class.
+        /// </summary>
+        private FileStream Stream { get; }
 
         /// <summary>
-        /// Holds if all the tests passed, on the last runthrough.
+        /// Holds if all the tests passed, on the last run through.
         /// </summary>
         public bool TestPassed { get; private set; } = true;
 
@@ -31,22 +44,33 @@ namespace CMP1903_A2_2324
         /// <exception cref="MissingMethodException">To instantiate the game, a constructor taking one boolean argument should be given. If this is not provided, an exception is thrown.</exception>
         public Testing(Type gameType)
         {
-            // Try to instantiate the game instance from the type given, with playing against a computer set to true.
             try
             {
-                GameInstance = (Game) Activator.CreateInstance(gameType, new object[] { true });
+                // Try to instantiate the game instance from the type given, with playing against a computer set to true.
+                GameInstance = (Game)Activator.CreateInstance(gameType, new object[] { true });
+
+                // Try to create a file stream for appending logs to.
+                Stream = new FileStream(LogPath, FileMode.Append);
             }
 
             // If the class is not a game, throw an exception.
             catch (InvalidCastException)
             {
-                throw new InvalidCastException("The specified class could not be tested, as it does not derive from the Game class.");
+                throw new InvalidCastException(
+                    "The specified class could not be tested, as it does not derive from the Game class.");
             }
-            
+
             // If the class cannot be constructed, throw an exception.
             catch (MissingMethodException)
             {
-                throw new MissingMethodException("The specified game could not be tested, as it does not have a constructor taking one argument.");
+                throw new MissingMethodException(
+                    "The specified game could not be tested, as it does not have a constructor taking one argument.");
+            }
+
+            // If the file stream creation fails, throw an exception.
+            catch (IOException)
+            {
+                throw new IOException("The testing log file could not be created or written to.");
             }
         }
 
@@ -81,7 +105,21 @@ namespace CMP1903_A2_2324
         }
 
         /// <summary>
+        /// Appends a log to the log file.
+        /// </summary>
+        /// <param name="message">The log to add to the file.</param>
+        private void WriteToLogFile(string message)
+        {
+            // Create a byte array, containing what should be written to the file.
+            var log = Encoding.UTF8.GetBytes($"\n{DateTime.Now}: {message}");
+            
+            // Append that byte array to the file stream.
+            Stream.Write(log, 0, log.Length);
+        }
+
+        /// <summary>
         /// Runs Debug.Assert on a condition, setting TestPassed to false if the test failed.
+        /// The result of the test is logged into the file stream.
         /// </summary>
         /// <param name="condition">Is true if the test passed.</param>
         /// <param name="message">The message to show on a test failure.</param>
@@ -94,6 +132,8 @@ namespace CMP1903_A2_2324
             // If the test hasn't already failed, set it to the condition's value.
             TestPassed = TestPassed && condition;
 
+            WriteToLogFile($"[{(condition ? "PASSED" : "FAILED")}] {message}");
+
             // Return the condition.
             return condition;
         }
@@ -101,12 +141,14 @@ namespace CMP1903_A2_2324
         /// <summary>
         /// The TurnCompletedHandler for when SevensOut is being tested.
         /// </summary>
-        /// <param name="playerNumber">The player's number, used for tracking who's turn it is. Currently unused by the method.</param>
+        /// <param name="playerNumber">The player's number, used for tracking who's turn it is.</param>
         /// <param name="gainedScore">The points the player got this turn.</param>
         /// <param name="score">The total points gained by the player this game. Currently unused by the method.</param>
         /// <param name="diceRolls">The dice rolls the player last rolled.</param>
         private void OnSevensOutTurn(int playerNumber, int gainedScore, int score, int[] diceRolls)
         {
+            WriteToLogFile($"Testing Player {playerNumber}s turn, in Sevens Out.");
+            
             // Test that the game broke when it was meant to.
             TestCondition(gainedScore != 7, "The game terminates with a score of seven.");
 
@@ -121,12 +163,14 @@ namespace CMP1903_A2_2324
         /// <summary>
         /// The TurnCompletedHandler for when ThreeOrMore is being tested.
         /// </summary>
-        /// <param name="playerNumber">The player's number, used for tracking who's turn it is. Currently unused by the method.</param>
+        /// <param name="playerNumber">The player's number, used for tracking who's turn it is.</param>
         /// <param name="gainedScore">The points the player got this turn.</param>
         /// <param name="score">The total points gained by the player this game.</param>
         /// <param name="diceRolls">The dice rolls the player last rolled.</param>
         private void OnThreeOrMore(int playerNumber, int gainedScore, int score, int[] diceRolls)
         {
+            WriteToLogFile($"Testing Player {playerNumber}s turn, in Three or More.");
+            
             // Check that the right number of dice are being used.
             TestCondition(diceRolls.Length == 5, "The game is using five dice");
 
@@ -159,6 +203,25 @@ namespace CMP1903_A2_2324
             // Check that the score is added correctly to the gained score.
             TestCondition(gainedScore - score <= 0, "The score is added correctly to the player.");
 
+        }
+
+        /// <summary>
+        /// A deconstructor for the testing class. Runs the method to close the file stream.
+        /// </summary>
+        ~Testing()
+        {
+            // Close the file stream.
+            Dispose();
+        }
+
+        /// <summary>
+        /// Implements the IDisposable Interface.
+        /// When the Testing class is disposed, the log file stream is closed with it. 
+        /// </summary>
+        public void Dispose()
+        {
+            // Close the file stream, used for logging. C# can finalize everything else automatically.
+            Stream?.Close();
         }
     }
 }

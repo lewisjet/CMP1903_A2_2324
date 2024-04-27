@@ -103,15 +103,20 @@ namespace CMP1903_A2_2324
                 else if (programState == ProgramStateType.Testing)
                 {
                     // Create a testing class for the type of game specified by the user
-                    var testingClass = new Testing(game.GetType());
-
-                    // Run all the tests for the game
-                    testingClass.RunTests();
-
-                    // Tell the user if all the tests passed or failed.
-                    if (testingClass.TestPassed) Console.WriteLine("All tests passed successfully.");
-                    else Console.WriteLine("Some tests failed during execution.");
-
+                    using (var testingClass = new Testing(game.GetType()))
+                    {
+                        // Run all the tests for the game
+                        testingClass.RunTests();
+                        
+                        // Tell the user if all the tests passed or failed.
+                        if (testingClass.TestPassed) 
+                            Console.WriteLine("All tests passed successfully.");
+                        else 
+                            Console.WriteLine("Some tests failed during execution.");
+                    
+                        // Inform the user where to find the log file.
+                        Console.WriteLine($"The results of the tests can be found at: {testingClass.LogPath}");
+                    }
                 }
 
                 // Else, if the user asked to play the game, set the game to playing against the computer (or not).
