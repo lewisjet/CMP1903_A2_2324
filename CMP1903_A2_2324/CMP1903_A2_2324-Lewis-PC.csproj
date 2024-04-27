@@ -7,7 +7,7 @@
     <ProjectGuid>{B8D1F7A9-C636-4985-B399-35BA4A8FD969}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>CMP1903_A1_2324</RootNamespace>
-    <AssemblyName>CMP1903_A1_2324</AssemblyName>
+    <AssemblyName>CMP1903_A2_2324</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
