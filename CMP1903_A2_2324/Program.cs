@@ -45,7 +45,7 @@ namespace CMP1903_A2_2324
             Console.WriteLine("Would you like to play with another person, against the computer, view game statistics, or test the game?");
             Console.WriteLine("Please press '1' if you would like to play with a partner, '2' to play with a computer, '3' to view game statistics, or '4' to test the game.");
 #endif            
-            // Keep asking the user to input a character, corresponsing to a state type, until they input something valid.
+            // Keep asking the user to input a character, corresponding to a state type, until they input something valid.
             // When they do, return what they say.
             while (true)
             {
@@ -81,7 +81,7 @@ namespace CMP1903_A2_2324
         /// <summary>
         /// Draws the menus for the game, and runs the game/tests from what was said by the user.
         /// </summary>
-        /// <exception cref="NotImplementedException">The method throws a NotImplementedException is given an unjown ProgramStateType.</exception>
+        /// <exception cref="NotImplementedException">The method throws a NotImplementedException is given an unknown ProgramStateType.</exception>
         private static void DrawGameMenu()
         {
             do
@@ -174,7 +174,7 @@ namespace CMP1903_A2_2324
                     // Attempt to draw a game menu and play/test the games
                     DrawGameMenu();
 
-                    // If all succeds, exit the program.
+                    // If all succeeds, exit the program.
                     break;
                 }
                 catch (Exception err)
